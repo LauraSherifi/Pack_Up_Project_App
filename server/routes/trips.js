@@ -3,15 +3,19 @@ const router = express.Router();
 const db = require('../config/db');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
 const authMiddleware = require('../middleware/auth');
 const { authorizeRoles } = require('../middleware/roleMiddleware');
 const tripModel = require('../models/tripModel');
+const uploadDir = path.join(__dirname, '..', 'public', 'uploads');
+
+fs.mkdirSync(uploadDir, { recursive: true });
 
 // Multer storage configuration
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'public/uploads/');
+    cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -54,7 +58,7 @@ router.post('/', authMiddleware, authorizeRoles('trip_planner'), upload.single('
   const imgPath = req.file ? `/uploads/${req.file.filename}` : null;
 
   tripModel.createTrip({ title, description, startDate, endDate, createdBy, img: imgPath }, (err, result) => {
-    if (err) return res.status(500).json({ message: 'Error saving trip', error: err });
+    if (err) return res.status(500).json({ message: 'Error saving trip' });
     res.status(201).json({
       message: 'Trip created successfully!',
       trip: {
@@ -72,7 +76,7 @@ router.post('/', authMiddleware, authorizeRoles('trip_planner'), upload.single('
 
 
 // ✅ Update trip
-router.put('/:id', authMiddleware, authorizeRoles('trip_planner'), upload.single('img'), (req, res) => {
+router.put('/:id', authMiddleware, authorizeRoles('trip_planner', 'admin'), upload.single('img'), (req, res) => {
   const tripId = req.params.id;
   const { title, description, startDate, endDate } = req.body;
   const img = req.file ? '/uploads/' + req.file.filename : req.body.img;
@@ -82,7 +86,7 @@ router.put('/:id', authMiddleware, authorizeRoles('trip_planner'), upload.single
   }
 
   tripModel.updateTrip(tripId, { title, description, startDate, endDate, img }, (err, result) => {
-    if (err) return res.status(500).json({ message: 'Error updating trip', error: err });
+    if (err) return res.status(500).json({ message: 'Error updating trip' });
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Trip not found' });
     res.status(200).json({ message: 'Trip updated successfully' });
   });
@@ -92,17 +96,17 @@ router.put('/:id', authMiddleware, authorizeRoles('trip_planner'), upload.single
 router.get('/:id', authMiddleware, (req, res) => {
   const tripId = req.params.id;
   tripModel.getTripById(tripId, (err, trip) => {
-    if (err) return res.status(500).json({ message: 'Error fetching trip', error: err });
+    if (err) return res.status(500).json({ message: 'Error fetching trip' });
     if (!trip) return res.status(404).json({ message: 'Trip not found' });
     res.status(200).json({ trip });
   });
 });
 
 // ✅ Delete trip
-router.delete('/:id', authMiddleware, authorizeRoles('trip_planner'), (req, res) => {
+router.delete('/:id', authMiddleware, authorizeRoles('trip_planner', 'admin'), (req, res) => {
   const tripId = req.params.id;
   tripModel.deleteTrip(tripId, (err, result) => {
-    if (err) return res.status(500).json({ message: 'Error deleting trip', error: err });
+    if (err) return res.status(500).json({ message: 'Error deleting trip' });
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Trip not found' });
     res.status(200).json({ message: 'Trip deleted successfully' });
   });

@@ -18,6 +18,7 @@ import Login from "./components/pages/Login";
 import SignUp from "./components/pages/SignUp";
 import PlannerDashboard from "./components/pages/PlannerDashboard";
 import AdminDashboard from "./components/pages/AdminDashboard";
+import ReviewsPage from "./components/pages/ReviewsPage";
 
 function AppContent() {
   const location = useLocation();
@@ -43,6 +44,7 @@ function AppContent() {
           <Route path="/contactus" element={<PrivateRoute element={<ContactUs />} />} />
           <Route path="/planner-dashboard" element={<PlannerRoute element={<PlannerDashboard />} />} />
           <Route path="/admin" element={<AdminRoute element={<AdminDashboard />} />} />
+          <Route path="/reviews" element={<PrivateRoute element={<ReviewsPage />} />} />
           <Route path="/login" element={<PublicRoute element={<Login />} />} />
           <Route path="/signup" element={<PublicRoute element={<SignUp />} />} />
         </Routes>

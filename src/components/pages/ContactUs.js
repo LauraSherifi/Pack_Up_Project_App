@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 
 const ContactUs = ({ show, onHide }) => {
+  const isModal = typeof show === 'boolean';
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -35,12 +36,8 @@ const ContactUs = ({ show, onHide }) => {
     }
   };
 
-  return (
-    <Modal show={show} onHide={onHide} centered size="lg">
-      <Modal.Header closeButton className="border-0" style={{ backgroundColor: '#004E64' }}>
-        <Modal.Title className="fw-bold" style={{ color: '#fff' }}>Contact Us</Modal.Title>
-      </Modal.Header>
-      <Modal.Body style={{ backgroundColor: '#E0FECA' }}>
+  const contactBody = (
+    <div style={{ backgroundColor: '#E0FECA' }} className="p-3">
         <div className="container-fluid">
           <div className="row">
             {/* Left Column - Contact Info */}
@@ -118,6 +115,29 @@ const ContactUs = ({ show, onHide }) => {
             </div>
           </div>
         </div>
+      </div>
+  );
+
+  if (!isModal) {
+    return (
+      <div className="container py-5">
+        <div className="shadow rounded overflow-hidden">
+          <div className="border-0 p-3" style={{ backgroundColor: '#004E64' }}>
+            <h2 className="fw-bold m-0" style={{ color: '#fff' }}>Contact Us</h2>
+          </div>
+          {contactBody}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Modal show={show} onHide={onHide} centered size="lg">
+      <Modal.Header closeButton className="border-0" style={{ backgroundColor: '#004E64' }}>
+        <Modal.Title className="fw-bold" style={{ color: '#fff' }}>Contact Us</Modal.Title>
+      </Modal.Header>
+      <Modal.Body className="p-0">
+        {contactBody}
       </Modal.Body>
     </Modal>
   );

@@ -114,6 +114,7 @@ function MyNavbar() {
             <Nav className="me-auto align-items-center">
               <NavItem to="/home" icon="bi-house-door" label="Home" />
               <NavItem to="/AboutUs" icon="bi-info-circle" label="About Us" />
+              <NavItem to="/reviews" icon="bi-star" label="Reviews" />
               <Nav.Link
                 onClick={() => setShowContactModal(true)}
                 className="mx-1 mx-md-2 px-3 py-2 rounded hover-effect text-E0FECA"

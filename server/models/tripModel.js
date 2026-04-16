@@ -69,12 +69,19 @@ const tripModel = {
     });
   },
 
-  // Delete a trip by ID
+  // Delete a trip by ID (with cascade delete for reviews)
   deleteTrip: (tripId, callback) => {
-    const sql = `DELETE FROM trips WHERE id = ?`;
-    db.query(sql, [tripId], (err, results) => {
-      if (err) return callback(err);
-      callback(null, results);
+    // First delete all reviews for this trip
+    const deleteReviewsSql = `DELETE FROM reviews WHERE trip_id = ?`;
+    db.query(deleteReviewsSql, [tripId], (reviewErr, reviewResults) => {
+      if (reviewErr) return callback(reviewErr);
+
+      // Then delete the trip
+      const deleteTripSql = `DELETE FROM trips WHERE id = ?`;
+      db.query(deleteTripSql, [tripId], (tripErr, tripResults) => {
+        if (tripErr) return callback(tripErr);
+        callback(null, tripResults);
+      });
     });
   }
 };

@@ -118,10 +118,10 @@ const PlannerDashboard = () => {
             <Card>
               <Card.Img
                 variant="top"
-                src={trip.img || '/img/default-trip.jpg'}
+                src={trip.img || '/img/slider1.jpg'}
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = '/img/default-trip.jpg';
+                  e.target.src = '/img/slider1.jpg';
                 }}
                 style={{ height: '200px', objectFit: 'cover' }}
               />
