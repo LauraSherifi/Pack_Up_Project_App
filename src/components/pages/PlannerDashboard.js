@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { Card, Button, Form, Modal, Container, Row, Col } from 'react-bootstrap';
+import { getAuthItem } from '../../utills/auth';
 
 const PlannerDashboard = () => {
   const [trips, setTrips] = useState([]);
@@ -14,7 +15,7 @@ const PlannerDashboard = () => {
     img: null
   });
 
-  const token = localStorage.getItem('token');
+  const token = getAuthItem('token');
 
   const fetchTrips = useCallback(async () => {
     try {
@@ -107,7 +108,7 @@ const PlannerDashboard = () => {
 
   return (
     <Container className="my-4">
-      <h2 className="text-center mb-4">My Trip Cards</h2>
+      <h2 className="packup-section-title text-center mb-4">My Trip Cards</h2>
       <Button onClick={() => setShowModal(true)} className="mb-4">
         Add New Trip
       </Button>
@@ -126,7 +127,7 @@ const PlannerDashboard = () => {
                 style={{ height: '200px', objectFit: 'cover' }}
               />
               <Card.Body>
-                <Card.Title>{trip.title}</Card.Title>
+                <Card.Title className="packup-card-title">{trip.title}</Card.Title>
                 <Card.Text>{trip.description}</Card.Text>
                 <Button variant="primary" onClick={() => openEditModal(trip)} className="me-2">
                   Edit
@@ -142,7 +143,7 @@ const PlannerDashboard = () => {
 
       <Modal show={showModal} onHide={closeForm}>
         <Modal.Header closeButton>
-          <Modal.Title>{editingTrip ? 'Edit Trip' : 'Add New Trip'}</Modal.Title>
+          <Modal.Title className="packup-modal-title">{editingTrip ? 'Edit Trip' : 'Add New Trip'}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>

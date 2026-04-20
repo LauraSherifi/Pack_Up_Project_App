@@ -96,9 +96,14 @@ function SignUp() {
   };
 
   return (
-    <div className="d-flex align-items-center justify-content-center min-vh-100" style={{ backgroundColor: '#E0FECA' }}>
-      <div className="card shadow-lg p-4" style={{ width: '100%', maxWidth: '500px', borderRadius: '1rem' }}>
-        <h3 className="text-center mb-4" style={{ color: '#004E64' }}>
+    <div className="auth-page d-flex align-items-center justify-content-center min-vh-100">
+      <div className="auth-glow auth-glow-1"></div>
+      <div className="auth-glow auth-glow-2"></div>
+      <div className="auth-glow auth-glow-3"></div>
+
+      <div className="auth-card auth-card-wide card p-4">
+        <p className="packup-kicker text-center mb-2">JOIN PACKUP</p>
+        <h3 className="packup-auth-title text-center mb-4">
           Create Account
         </h3>
         <form onSubmit={handleSubmit}>
@@ -110,7 +115,7 @@ function SignUp() {
               value={form.fullName}
               onChange={handleChange}
               type="text"
-              className={`form-control ${errors.fullName ? 'is-invalid' : ''}`}
+              className={`auth-input form-control ${errors.fullName ? 'is-invalid' : ''}`}
               placeholder="Your full name"
               required
             />
@@ -125,7 +130,7 @@ function SignUp() {
               value={form.email}
               onChange={handleChange}
               type="email"
-              className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+              className={`auth-input form-control ${errors.email ? 'is-invalid' : ''}`}
               placeholder="you@example.com"
               required
             />
@@ -140,7 +145,7 @@ function SignUp() {
               value={form.password}
               onChange={handleChange}
               type="password"
-              className={`form-control ${errors.password ? 'is-invalid' : ''}`}
+              className={`auth-input form-control ${errors.password ? 'is-invalid' : ''}`}
               placeholder="********"
               required
             />
@@ -155,7 +160,7 @@ function SignUp() {
               value={form.confirmPassword}
               onChange={handleChange}
               type="password"
-              className={`form-control ${errors.confirmPassword ? 'is-invalid' : ''}`}
+              className={`auth-input form-control ${errors.confirmPassword ? 'is-invalid' : ''}`}
               placeholder="********"
               required
             />
@@ -170,7 +175,7 @@ function SignUp() {
               value={form.phone}
               onChange={handleChange}
               type="text"
-              className="form-control"
+              className="auth-input form-control"
               placeholder="+383..."
             />
           </div>
@@ -183,7 +188,7 @@ function SignUp() {
               value={form.city}
               onChange={handleChange}
               type="text"
-              className="form-control"
+              className="auth-input form-control"
               placeholder="City"
             />
           </div>
@@ -195,7 +200,7 @@ function SignUp() {
               name="role"
               value={form.role}
               onChange={handleChange}
-              className={`form-select ${errors.role ? 'is-invalid' : ''}`}
+              className={`auth-input form-select ${errors.role ? 'is-invalid' : ''}`}
               required
             >
               <option value="">-- Select Role --</option>
@@ -205,14 +210,14 @@ function SignUp() {
             {errors.role && <div className="invalid-feedback">{errors.role}</div>}
           </div>
 
-          <button type="submit" className="btn w-100" style={{ backgroundColor: '#25A18E', color: 'white' }}>
+          <button type="submit" className="auth-submit btn w-100">
             Sign Up
           </button>
         </form>
 
         <p className="mt-3 text-center">
           Already have an account?{' '}
-          <Link to="/login" style={{ color: '#E56E38' }}>
+          <Link to="/login" className="auth-link">
             Log in
           </Link>
         </p>

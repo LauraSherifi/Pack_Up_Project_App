@@ -23,7 +23,7 @@ const Footer = () => {
     <footer className="text-center" style={{ 
       backgroundColor: '#004E64',
       color: '#E0FECA',
-      fontFamily: 'TAN-St-Canard, sans-serif'
+      fontFamily: 'var(--packup-font)'
     }}>
       <div className="container py-4 pb-0">
         <section className="mb-4">
@@ -65,7 +65,7 @@ const Footer = () => {
         className="text-center p-3" 
         style={{ 
           backgroundColor: 'rgba(0, 0, 0, 0.2)',
-          fontFamily: 'TAN-St-Canard, sans-serif'
+          fontFamily: 'var(--packup-font)'
         }}
       >
         © {new Date().getFullYear()} PackUp Travel

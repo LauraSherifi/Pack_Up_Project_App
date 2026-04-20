@@ -3,6 +3,8 @@ const router = express.Router();
 const db = require('../config/db'); // fixed path
 const authenticateToken = require('../middleware/auth');
 const { authorizeRoles } = require('../middleware/roleMiddleware');
+const { sendValidationError, validateAdminUserUpdate } = require('../utils/validation');
+const { auditFromRequest } = require('../utils/auditLogger');
 
 // Protect all routes below - only admin access
 router.use(authenticateToken, authorizeRoles('admin'));
@@ -16,16 +18,74 @@ router.get('/users', (req, res) => {
   });
 });
 
+// GET recent audit logs for admin traceability
+router.get('/audit-logs', (req, res) => {
+  const query = `
+    SELECT
+      audit_logs.id,
+      audit_logs.user_id,
+      users.username,
+      audit_logs.action,
+      audit_logs.entity_type,
+      audit_logs.entity_id,
+      audit_logs.metadata,
+      audit_logs.created_at
+    FROM audit_logs
+    LEFT JOIN users ON users.id = audit_logs.user_id
+    ORDER BY audit_logs.created_at DESC, audit_logs.id DESC
+    LIMIT 25
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) return res.status(500).json({ error: 'Failed to fetch audit logs' });
+    res.json({ logs: results });
+  });
+});
+
+// GET recent event logs for admin event monitoring
+router.get('/event-logs', (req, res) => {
+  const query = `
+    SELECT
+      id,
+      event_type,
+      entity_type,
+      entity_id,
+      payload,
+      processed,
+      created_at
+    FROM event_logs
+    ORDER BY created_at DESC, id DESC
+    LIMIT 25
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) return res.status(500).json({ error: 'Failed to fetch event logs' });
+    res.json({ logs: results });
+  });
+});
+
 // UPDATE a user (username, role)
 router.put('/users/:id', (req, res) => {
   const { username, role } = req.body;
   const { id } = req.params;
+  const validationErrors = validateAdminUserUpdate({ username, role });
+
+  if (validationErrors.length > 0) {
+    return sendValidationError(res, validationErrors);
+  }
+
   const query = 'UPDATE users SET username = ?, role = ? WHERE id = ?';
   db.query(query, [username, role, id], (err, result) => {
     if (err) return res.status(500).json({ error: 'Failed to update user' });
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
+    auditFromRequest(req, {
+      action: 'ADMIN_USER_UPDATED',
+      entityType: 'user',
+      entityId: Number(id),
+      metadata: { username, role },
+    });
     res.json({ message: 'User updated successfully' });
   });
 });
@@ -79,6 +139,11 @@ router.delete('/users/:id', (req, res) => {
                 connection.commit((commitErr) => {
                   if (commitErr) return rollback(500, 'Failed to commit delete transaction');
 
+                  auditFromRequest(req, {
+                    action: 'ADMIN_USER_DELETED',
+                    entityType: 'user',
+                    entityId: Number(id),
+                  });
                   connection.release();
                   res.json({ message: 'User and related trips deleted successfully' });
                 });

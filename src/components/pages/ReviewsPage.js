@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { getAuthItem } from '../../utills/auth';
 
 const ReviewsPage = () => {
   const [reviews, setReviews] = useState([]);
@@ -11,7 +12,7 @@ const ReviewsPage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const token = localStorage.getItem('token');
+      const token = getAuthItem('token');
 
       if (!token) {
         navigate('/login', { replace: true });
@@ -46,9 +47,10 @@ const ReviewsPage = () => {
     fetchData();
   }, [navigate]);
 
-  const getTripById = (tripId) => {
-    return trips.find((trip) => Number(trip.id) === Number(tripId));
-  };
+  const getTripById = useCallback(
+    (tripId) => trips.find((trip) => Number(trip.id) === Number(tripId)),
+    [trips]
+  );
 
   const getTripImageSrc = (trip) => {
     if (!trip) return '';
@@ -88,7 +90,7 @@ const ReviewsPage = () => {
     const fullStars = Math.round(safeRating);
 
     return (
-      <span style={{ color: '#f4b400', letterSpacing: '1px', fontSize: '14px' }}>
+      <span className="reviews-stars" aria-label={`${safeRating} out of 5 stars`}>
         {[1, 2, 3, 4, 5].map((star) => (star <= fullStars ? '★' : '☆')).join('')}
       </span>
     );
@@ -145,7 +147,7 @@ const ReviewsPage = () => {
         }
         return b.reviewCount - a.reviewCount;
       });
-  }, [reviews, trips]);
+  }, [reviews, getTripById]);
 
   const totalReviews = reviews.length;
   const totalTripsReviewed = groupedTripReviews.length;
@@ -159,269 +161,117 @@ const ReviewsPage = () => {
 
   if (loading) {
     return (
-      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '32px 20px' }}>
-        <div style={{ textAlign: 'center', color: '#666' }}>Loading reviews...</div>
-      </div>
+      <main className="reviews-page">
+        <div className="reviews-shell">
+          <div className="reviews-empty">Loading reviews...</div>
+        </div>
+      </main>
     );
   }
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '32px 20px' }}>
-      <h1 style={{ fontSize: '36px', fontWeight: '700', marginBottom: '24px', color: '#222' }}>
-        Reviews
-      </h1>
-
-      {error && (
-        <div
-          style={{
-            marginBottom: '16px',
-            border: '1px solid #f5c2c7',
-            background: '#f8d7da',
-            color: '#842029',
-            padding: '12px 16px',
-            borderRadius: '8px',
-          }}
-        >
-          {error}
+    <main className="reviews-page">
+      <div className="reviews-shell">
+        <div className="reviews-header">
+          <p className="packup-kicker reviews-kicker">TRAVEL FEEDBACK</p>
+          <h1 className="packup-page-title">Reviews</h1>
+          <p className="packup-subtitle">See what travelers are saying about their latest PackUp trips.</p>
         </div>
-      )}
 
-      {!error && totalReviews === 0 && (
-        <div
-          style={{
-            border: '1px solid #b6d4fe',
-            background: '#cfe2ff',
-            color: '#084298',
-            padding: '12px 16px',
-            borderRadius: '8px',
-          }}
-        >
-          No reviews yet.
-        </div>
-      )}
+        {error && <div className="reviews-alert reviews-alert-error">{error}</div>}
 
-      {!error && totalReviews > 0 && (
-        <>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-              gap: '16px',
-              marginBottom: '30px',
-            }}
-          >
-            <div
-              style={{
-                background: '#fff',
-                border: '1px solid #e5e7eb',
-                borderRadius: '14px',
-                padding: '18px',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
-              }}
-            >
-              <div style={{ fontSize: '14px', color: '#777', marginBottom: '8px' }}>
-                Total Reviews
+        {!error && totalReviews === 0 && (
+          <div className="reviews-alert reviews-alert-info">No reviews yet.</div>
+        )}
+
+        {!error && totalReviews > 0 && (
+          <>
+            <section className="reviews-stats" aria-label="Review summary">
+              <div className="reviews-stat-card">
+                <span>Total Reviews</span>
+                <strong>{totalReviews}</strong>
               </div>
-              <div style={{ fontSize: '34px', fontWeight: '700', color: '#222' }}>
-                {totalReviews}
-              </div>
-            </div>
 
-            <div
-              style={{
-                background: '#fff',
-                border: '1px solid #e5e7eb',
-                borderRadius: '14px',
-                padding: '18px',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
-              }}
-            >
-              <div style={{ fontSize: '14px', color: '#777', marginBottom: '8px' }}>
-                Average Rating
+              <div className="reviews-stat-card">
+                <span>Average Rating</span>
+                <div className="reviews-stat-rating">
+                  <strong>{overallAverageRating}</strong>
+                  {renderStars(overallAverageRating)}
+                </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '34px', fontWeight: '700', color: '#222' }}>
-                  {overallAverageRating}
-                </span>
-                {renderStars(overallAverageRating)}
+
+              <div className="reviews-stat-card">
+                <span>Trips Reviewed</span>
+                <strong>{totalTripsReviewed}</strong>
               </div>
-            </div>
+            </section>
 
-            <div
-              style={{
-                background: '#fff',
-                border: '1px solid #e5e7eb',
-                borderRadius: '14px',
-                padding: '18px',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
-              }}
-            >
-              <div style={{ fontSize: '14px', color: '#777', marginBottom: '8px' }}>
-                Trips Reviewed
-              </div>
-              <div style={{ fontSize: '34px', fontWeight: '700', color: '#222' }}>
-                {totalTripsReviewed}
-              </div>
-            </div>
-          </div>
+            <section className="reviews-grid" aria-label="Trip reviews">
+              {groupedTripReviews.map((tripGroup) => (
+                <article className="reviews-trip-card" key={tripGroup.tripId}>
+                  <div className="reviews-trip-header">
+                    {tripGroup.tripImage ? (
+                      <img
+                        src={tripGroup.tripImage}
+                        alt={tripGroup.tripTitle}
+                        className="reviews-trip-image"
+                      />
+                    ) : (
+                      <div className="reviews-trip-placeholder">No Image</div>
+                    )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-            {groupedTripReviews.map((tripGroup) => (
-              <div
-                key={tripGroup.tripId}
-                style={{
-                  background: '#fff',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '18px',
-                  boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
-                  overflow: 'hidden',
-                }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    gap: '16px',
-                    alignItems: 'center',
-                    padding: '18px',
-                    borderBottom: '1px solid #f0f0f0',
-                  }}
-                >
-                  {tripGroup.tripImage ? (
-                    <img
-                      src={tripGroup.tripImage}
-                      alt={tripGroup.tripTitle}
-                      style={{
-                        width: '58px',
-                        height: '58px',
-                        objectFit: 'cover',
-                        borderRadius: '12px',
-                        border: '1px solid #e5e7eb',
-                        flexShrink: 0,
-                      }}
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: '58px',
-                        height: '58px',
-                        borderRadius: '12px',
-                        border: '1px solid #e5e7eb',
-                        background: '#f3f4f6',
-                        color: '#777',
-                        fontSize: '11px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        textAlign: 'center',
-                        padding: '6px',
-                        flexShrink: 0,
-                      }}
-                    >
-                      No Image
-                    </div>
-                  )}
-
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div
-                      style={{
-                        fontSize: '20px',
-                        fontWeight: '700',
-                        color: '#222',
-                        marginBottom: '6px',
-                      }}
-                    >
-                      {tripGroup.tripTitle}
-                    </div>
-
-                    <div
-                      style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: '12px',
-                        alignItems: 'center',
-                        color: '#666',
-                        fontSize: '14px',
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        {renderStars(tripGroup.averageRating)}
-                        <span style={{ fontWeight: '600', color: '#333' }}>
-                          {tripGroup.averageRating}
+                    <div className="reviews-trip-summary">
+                      <h2>{tripGroup.tripTitle}</h2>
+                      <div className="reviews-trip-meta">
+                        <span>
+                          {renderStars(tripGroup.averageRating)}
+                          <strong>{tripGroup.averageRating}</strong>
+                        </span>
+                        <span>
+                          {tripGroup.reviewCount} review{tripGroup.reviewCount !== 1 ? 's' : ''}
                         </span>
                       </div>
-                      <span>
-                        {tripGroup.reviewCount} review{tripGroup.reviewCount !== 1 ? 's' : ''}
-                      </span>
                     </div>
                   </div>
-                </div>
 
-                <div>
-                  {tripGroup.reviews.map((review) => {
-                    const username =
-                      review.username ||
-                      review.userName ||
-                      review.user_id ||
-                      review.userId ||
-                      'Anonymous';
+                  <div className="reviews-list">
+                    {tripGroup.reviews.map((review) => {
+                      const username =
+                        review.username ||
+                        review.userName ||
+                        review.user_id ||
+                        review.userId ||
+                        'Anonymous';
 
-                    const rawDate = review.created_at || review.createdAt;
-                    const comment = review.comment || 'No comment';
+                      const rawDate = review.created_at || review.createdAt;
+                      const comment = review.comment || 'No comment';
 
-                    return (
-                      <div
-                        key={review.id}
-                        style={{
-                          padding: '16px 18px',
-                          borderTop: '1px solid #f5f5f5',
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'flex-start',
-                            gap: '12px',
-                            marginBottom: '8px',
-                            flexWrap: 'wrap',
-                          }}
-                        >
-                          <div>
-                            <div
-                              style={{
-                                fontWeight: '700',
-                                color: '#222',
-                                marginBottom: '4px',
-                              }}
-                            >
-                              {username}
+                      return (
+                        <div className="reviews-item" key={review.id}>
+                          <div className="reviews-item-top">
+                            <div>
+                              <h3>{username}</h3>
+                              <div className="reviews-item-rating">
+                                {renderStars(review.rating)}
+                                <span>{Number(review.rating) || 0}/5</span>
+                              </div>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              {renderStars(review.rating)}
-                              <span style={{ fontSize: '14px', color: '#444', fontWeight: '600' }}>
-                                {Number(review.rating) || 0}/5
-                              </span>
-                            </div>
+
+                            <time>{formatDate(rawDate)}</time>
                           </div>
 
-                          <div style={{ fontSize: '13px', color: '#888' }}>
-                            {formatDate(rawDate)}
-                          </div>
+                          <p>{comment}</p>
                         </div>
-
-                        <div style={{ color: '#444', lineHeight: '1.6', fontSize: '15px' }}>
-                          {comment}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
+                      );
+                    })}
+                  </div>
+                </article>
+              ))}
+            </section>
+          </>
+        )}
+      </div>
+    </main>
   );
 };
 

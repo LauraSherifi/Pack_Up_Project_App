@@ -1,0 +1,68 @@
+name: PackUp CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  build-and-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Run frontend static analysis
+        run: npm run lint
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Install backend dependencies
+        working-directory: server
+        run: npm ci
+
+      - name: Run backend static analysis
+        working-directory: server
+        run: npm run check
+
+      - name: Check backend syntax
+        run: |
+          node --check server/index.js
+          node --check server/config/db.js
+          node --check server/middleware/auth.js
+          node --check server/middleware/roleMiddleware.js
+          node --check server/routes/authRoutes.js
+          node --check server/routes/trips.js
+          node --check server/routes/reviews.js
+          node --check server/routes/adminRoutes.js
+          node --check server/routes/notifications.js
+          node --check server/models/userModel.js
+          node --check server/models/tripModel.js
+          node --check server/models/reviewModel.js
+          node --check server/utils/validation.js
+          node --check server/utils/auditLogger.js
+          node --check server/utils/cache.js
+          node --check server/utils/eventLogger.js
+          node --check server/utils/notificationService.js
+          node --check server/utils/rabbitmq.js
+          node --check server/docs/openapi.js
+          node --check server/scripts/applyAuditMigration.js
+          node --check server/scripts/applyEventMigration.js
+          node --check server/scripts/applyIntegrityMigration.js
+          node --check server/scripts/applyNotificationMigration.js
+          node --check server/scripts/applySearchMigration.js
+          node --check server/scripts/checkSyntax.js
+          node --check server/workers/eventConsumer.js

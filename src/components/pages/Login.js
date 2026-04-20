@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { getAuthItem, setAuthSession } from '../../utills/auth';
 
 function Login() {
   const navigate = useNavigate();
@@ -9,7 +10,7 @@ function Login() {
 
   // 🔒 Redirect to Start if user is not logged in and uses the back button
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = getAuthItem('token');
     if (!token) {
       const handlePopState = () => {
         navigate('/', { replace: true });
@@ -56,11 +57,9 @@ function Login() {
 
       // Save token and user info
       const { token, user } = data;
-      const { username, role } = user;
+      const { id, username, role } = user;
 
-      localStorage.setItem('token', token);
-      localStorage.setItem('username', username);
-      localStorage.setItem('role', role);
+      setAuthSession({ token, username, role, userId: id });
 
       navigate('/home', { replace: true });
 
@@ -73,12 +72,14 @@ function Login() {
   };
 
   return (
-    <div
-      className="d-flex align-items-center justify-content-center min-vh-100"
-      style={{ backgroundColor: '#E0FECA' }}
-    >
-      <div className="card shadow-lg p-4" style={{ width: '100%', maxWidth: '400px', borderRadius: '1rem' }}>
-        <h3 className="text-center mb-4" style={{ color: '#004E64' }}>
+    <div className="auth-page d-flex align-items-center justify-content-center min-vh-100">
+      <div className="auth-glow auth-glow-1"></div>
+      <div className="auth-glow auth-glow-2"></div>
+      <div className="auth-glow auth-glow-3"></div>
+
+      <div className="auth-card card p-4">
+        <p className="packup-kicker text-center mb-2">WELCOME BACK</p>
+        <h3 className="packup-auth-title text-center mb-4">
           Log In
         </h3>
         <form onSubmit={handleSubmit}>
@@ -89,7 +90,7 @@ function Login() {
               value={form.email}
               onChange={handleChange}
               type="email"
-              className="form-control"
+              className="auth-input form-control"
               placeholder="Enter your email"
               required
             />
@@ -101,7 +102,7 @@ function Login() {
               value={form.password}
               onChange={handleChange}
               type="password"
-              className="form-control"
+              className="auth-input form-control"
               placeholder="Enter your password"
               required
             />
@@ -111,8 +112,7 @@ function Login() {
 
           <button
             type="submit"
-            className="btn w-100"
-            style={{ backgroundColor: '#25A18E', color: 'white' }}
+            className="auth-submit btn w-100"
             disabled={loading}
           >
             {loading ? 'Logging in...' : 'Log In'}
@@ -120,7 +120,7 @@ function Login() {
         </form>
         <p className="mt-3 text-center">
           Don't have an account?{' '}
-          <Link to="/signup" style={{ color: '#E56E38' }}>
+          <Link to="/signup" className="auth-link">
             Sign up
           </Link>
         </p>

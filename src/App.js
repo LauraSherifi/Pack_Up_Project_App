@@ -19,11 +19,13 @@ import SignUp from "./components/pages/SignUp";
 import PlannerDashboard from "./components/pages/PlannerDashboard";
 import AdminDashboard from "./components/pages/AdminDashboard";
 import ReviewsPage from "./components/pages/ReviewsPage";
+import NotificationsPage from "./components/pages/NotificationsPage";
+import { getAuthItem } from "./utills/auth";
 
 function AppContent() {
   const location = useLocation();
-  const token = localStorage.getItem("token");
-  const userRole = localStorage.getItem("role");
+  const token = getAuthItem("token");
+  const userRole = getAuthItem("role");
 
   const hideNavbarFooter = ["/", "/login", "/signup"].includes(location.pathname.toLowerCase());
 
@@ -36,7 +38,7 @@ function AppContent() {
     <div className="d-flex flex-column min-vh-100">
       {!hideNavbarFooter && <Navbar />}
       
-      <div className="flex-grow-1">
+      <div className="app-main flex-grow-1 d-flex flex-column">
         <Routes>
           <Route path="/" element={<Start />} />
           <Route path="/home" element={<PrivateRoute element={<HomePage />} />} />
@@ -45,6 +47,7 @@ function AppContent() {
           <Route path="/planner-dashboard" element={<PlannerRoute element={<PlannerDashboard />} />} />
           <Route path="/admin" element={<AdminRoute element={<AdminDashboard />} />} />
           <Route path="/reviews" element={<PrivateRoute element={<ReviewsPage />} />} />
+          <Route path="/notifications" element={<PrivateRoute element={<NotificationsPage />} />} />
           <Route path="/login" element={<PublicRoute element={<Login />} />} />
           <Route path="/signup" element={<PublicRoute element={<SignUp />} />} />
         </Routes>

@@ -1,0 +1,142 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: packup-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: packup_root_password
+      MYSQL_DATABASE: packup_db
+    ports:
+      - "3307:3306"
+    volumes:
+      - packup_mysql_data:/var/lib/mysql
+      - ./server/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-ppackup_root_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: packup-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: packup
+      RABBITMQ_DEFAULT_PASS: packup_password
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - packup_rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: packup-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - packup_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./server
+    container_name: packup-api
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: packup_root_password
+      DB_NAME: packup_db
+      JWT_SECRET: packup_local_dev_secret
+      PORT: 5000
+      RABBITMQ_URL: amqp://packup:packup_password@rabbitmq:5672
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "5000:5000"
+    volumes:
+      - packup_uploads:/app/public/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  event-worker:
+    build:
+      context: ./server
+    container_name: packup-event-worker
+    restart: unless-stopped
+    command: npm run worker:events
+    environment:
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: packup_root_password
+      DB_NAME: packup_db
+      JWT_SECRET: packup_local_dev_secret
+      RABBITMQ_URL: amqp://packup:packup_password@rabbitmq:5672
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: packup-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - packup_prometheus_data:/prometheus
+    depends_on:
+      - api
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: packup-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "3001:3000"
+    volumes:
+      - packup_grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+
+  web:
+    build:
+      context: .
+    container_name: packup-web
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+
+volumes:
+  packup_mysql_data:
+  packup_rabbitmq_data:
+  packup_redis_data:
+  packup_prometheus_data:
+  packup_grafana_data:
+  packup_uploads:

@@ -1,0 +1,9 @@
+node_modules
+build
+.git
+*.log
+frontend.err.log
+frontend.out.log
+server/node_modules
+server/public/uploads
+

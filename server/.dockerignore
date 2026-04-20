@@ -1,0 +1,7 @@
+node_modules
+.git
+*.log
+server.err.log
+server.out.log
+public/uploads
+.env
