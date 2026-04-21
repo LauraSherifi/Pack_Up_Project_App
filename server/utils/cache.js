@@ -7,6 +7,33 @@ dotenv.config({ path: path.join(__dirname, '..', '.env') });
 let redisClient = null;
 let redisConnectPromise = null;
 let redisDisabled = false;
+let redisWarningLogged = false;
+
+const logRedisWarning = (message) => {
+  if (redisWarningLogged) return;
+  redisWarningLogged = true;
+  console.warn(message);
+};
+
+const disableRedis = (message) => {
+  redisDisabled = true;
+  redisConnectPromise = null;
+
+  if (redisClient) {
+    const clientToClose = redisClient;
+    redisClient = null;
+
+    if (clientToClose.isOpen) {
+      clientToClose.quit().catch(() => {
+        clientToClose.disconnect();
+      });
+    } else {
+      clientToClose.disconnect();
+    }
+  }
+
+  logRedisWarning(message);
+};
 
 const getRedisClient = async () => {
   if (redisDisabled) return null;
@@ -17,16 +44,22 @@ const getRedisClient = async () => {
     if (!redisClient) {
       redisClient = createClient({
         url: process.env.REDIS_URL || 'redis://localhost:6379',
+        socket: {
+          reconnectStrategy: false,
+        },
       });
 
       redisClient.on('error', (err) => {
-        console.warn('Redis cache error:', err.message);
+        if (redisDisabled) return;
+
+        const details = err?.message ? `: ${err.message}` : '';
+        disableRedis(`Redis cache unavailable, using in-memory cache${details}`);
       });
     }
 
     if (!redisClient.isOpen) {
       redisConnectPromise = redisConnectPromise || redisClient.connect().catch((err) => {
-        redisConnectPromise = null;
+        disableRedis(`Redis cache unavailable, using in-memory cache: ${err.message}`);
         throw err;
       });
       await redisConnectPromise;
@@ -34,8 +67,9 @@ const getRedisClient = async () => {
 
     return redisClient;
   } catch (err) {
-    redisDisabled = true;
-    console.warn('Redis cache disabled, using in-memory cache:', err.message);
+    if (!redisDisabled) {
+      disableRedis(`Redis cache unavailable, using in-memory cache: ${err.message}`);
+    }
     return null;
   }
 };
