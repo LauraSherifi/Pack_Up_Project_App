@@ -10,7 +10,7 @@ services:
       - "3307:3306"
     volumes:
       - packup_mysql_data:/var/lib/mysql
-      - ./server/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./DATABASE/submission_database.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-ppackup_root_password"]
       interval: 10s

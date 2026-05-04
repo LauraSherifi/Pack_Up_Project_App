@@ -12,6 +12,15 @@ const ROUTING_KEY = process.env.RABBITMQ_EVENTS_ROUTING_KEY || 'packup.event';
 
 let amqp = null;
 let connectionPromise = null;
+let rabbitMqDisabled = false;
+let rabbitMqUnavailableLogged = false;
+
+const logRabbitMqUnavailableOnce = (message) => {
+  if (rabbitMqUnavailableLogged) return;
+
+  rabbitMqUnavailableLogged = true;
+  console.warn(message);
+};
 
 const loadAmqp = () => {
   if (amqp) return amqp;
@@ -26,13 +35,19 @@ const loadAmqp = () => {
 };
 
 const getConnection = async () => {
+  if (rabbitMqDisabled) return null;
+
   const library = loadAmqp();
   if (!library) return null;
 
   if (!connectionPromise) {
     connectionPromise = library.connect(RABBITMQ_URL).catch((err) => {
       connectionPromise = null;
-      throw err;
+      rabbitMqDisabled = true;
+      logRabbitMqUnavailableOnce(
+        `RabbitMQ unavailable, event publishing disabled for this session: ${err.message}`
+      );
+      return null;
     });
   }
 

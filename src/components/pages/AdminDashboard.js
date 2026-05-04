@@ -30,7 +30,7 @@ function AdminDashboard() {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/admin/users', {
+      const res = await fetch('/api/admin/users', {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -43,7 +43,7 @@ function AdminDashboard() {
 
   const fetchTrips = useCallback(async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/trips', {
+      const res = await fetch('/api/trips', {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -56,7 +56,7 @@ function AdminDashboard() {
 
   const fetchReviews = useCallback(async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/reviews', {
+      const res = await fetch('/api/reviews', {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -69,7 +69,7 @@ function AdminDashboard() {
 
   const fetchAuditLogs = useCallback(async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/admin/audit-logs', {
+      const res = await fetch('/api/admin/audit-logs', {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -82,7 +82,7 @@ function AdminDashboard() {
 
   const fetchEventLogs = useCallback(async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/admin/event-logs', {
+      const res = await fetch('/api/admin/event-logs', {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -106,7 +106,7 @@ function AdminDashboard() {
     if (!confirmDelete) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/users/${id}`, {
+      const res = await fetch(`/api/admin/users/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -123,7 +123,7 @@ function AdminDashboard() {
     if (!confirmDelete) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/trips/${id}`, {
+      const res = await fetch(`/api/trips/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -148,7 +148,7 @@ function AdminDashboard() {
 
   const handleEditSubmit = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/users/${id}`, {
+      const res = await fetch(`/api/admin/users/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -201,7 +201,7 @@ function AdminDashboard() {
         formData.append('endDate', editTripFormData.endDate);
         formData.append('img', editTripFormData.img);
         
-        res = await fetch(`http://localhost:5000/api/trips/${currentEditingTrip.id}`, {
+        res = await fetch(`/api/trips/${currentEditingTrip.id}`, {
           method: 'PUT',
           headers: {
             Authorization: `Bearer ${token}`
@@ -217,7 +217,7 @@ function AdminDashboard() {
           endDate: editTripFormData.endDate
         };
         
-        res = await fetch(`http://localhost:5000/api/trips/${currentEditingTrip.id}`, {
+        res = await fetch(`/api/trips/${currentEditingTrip.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -240,7 +240,7 @@ function AdminDashboard() {
   const handleReviewDetails = async (trip) => {
     setCurrentReviewTrip(trip);
     try {
-      const res = await fetch(`http://localhost:5000/api/reviews/${trip.id}`, {
+      const res = await fetch(`/api/reviews/${trip.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();

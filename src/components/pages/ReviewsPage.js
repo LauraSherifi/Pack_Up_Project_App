@@ -62,7 +62,7 @@ const ReviewsPage = () => {
       return rawImage;
     }
 
-    if (rawImage.startsWith('/uploads/')) {
+    if (rawImage.startsWith('/')) {
       return rawImage;
     }
 

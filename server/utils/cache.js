@@ -25,10 +25,14 @@ const disableRedis = (message) => {
 
     if (clientToClose.isOpen) {
       clientToClose.quit().catch(() => {
-        clientToClose.disconnect();
+        try {
+          if (clientToClose.isOpen) {
+            clientToClose.disconnect();
+          }
+        } catch (_) {
+          // Ignore shutdown errors while falling back to memory cache.
+        }
       });
-    } else {
-      clientToClose.disconnect();
     }
   }
 
